@@ -9,28 +9,45 @@ const Home = () => {
 	const [task, setTask] = useState("")
 	const [todos, setTodos] = useState([])
 	useEffect(() => {
-		fetch('https://playground.4geeks.com/todo/users/Juanito', {
-			method: "POST", 
-			body: JSON.stringify(task),
+		obtenerTareas()
+	}, [])
+
+	const createUser = () => {
+		fetch('https://playground.4geeks.com/todo/users/Juan', {
+			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
 			}
 		})
-		.then(resp => {
-			console.log(resp.ok)
-			console.log(resp.status)
-			return resp.json()
-		})
-		.then(data => {
-			console.log(data)
+			.then(resp => {
+				console.log(resp.ok)
+				console.log(resp.status)
+				return resp.json()
+			})
+			.then(data => {
+				console.log(data)
 
-		})
-		.catch(error => {
+			})
+			.catch(error => {
+				console.log(error)
+			})
+	}
+
+	const obtenerTareas = async () => {
+		try {
+			const response = await fetch('https://playground.4geeks.com/todo/users/Juan')
+			console.log(response)
+			if(response.status == 404){
+				createUser()
+				return
+			}
+			const data = await response.json()
+			console.log(data.todos)
+			setTodos(data.todos)
+		} catch (error) {
 			console.log(error)
-		})
-	}, [])
-
-	
+		}
+	}
 
 	const handleClick = () => {
 		if (!task.trim()) return;
@@ -40,32 +57,32 @@ const Home = () => {
 			"label": task,
 			"is_done": false
 		}
-		fetch('https://playground.4geeks.com/todo/todos/Juanito', {
+		fetch('https://playground.4geeks.com/todo/todos/Juan', {
 			method: "POST",
-			body: JSON.stringify(newTask), 
+			body: JSON.stringify(newTask),
 			headers: {
 				"Content-Type": "application/json"
 			}
 
 		})
-		.then(resp => {
-			console.log(resp.ok)
-			console.log(resp.status)
-			if(!resp.ok){
-				throw new Error("Error creando tarea")
-			}
-			return resp.json()
-		})
-		.then(data => {
-			//console.log(data)
-			setTodos((prev) => [...prev, data])
-			setTask("")
-		})
-		.catch(error => {
-			console.log(error)
+			.then(resp => {
+				console.log(resp.ok)
+				console.log(resp.status)
+				if (!resp.ok) {
+					throw new Error("Error creando tarea")
+				}
+				return resp.json()
+			})
+			.then(data => {
+				//console.log(data)
+				setTodos((prev) => [...prev, data])
+				setTask("")
+			})
+			.catch(error => {
+				console.log(error)
 
-		})
-		
+			})
+
 	}
 
 	const handleChange = (event) => {
@@ -73,21 +90,16 @@ const Home = () => {
 		//console.log(event.target.value)
 	}
 
-	const deleteTodo = (id) => {
+	const deleteTodo = async (id) => {
 		console.log(id)
-		const deleteIndex = todos.filter((t) => t.id !== id)
-		setTodos(deleteIndex)
-		fetch('https://playground.4geeks.com/todo/todos/{id}', {
+		
+		const response = await fetch(`https://playground.4geeks.com/todo/todos/${id}`, {
 			method: "DELETE",
 		})
-		.then(resp => {
-			console.log(resp.ok)
-			console.log(resp.status)
-			return resp.json(id)
-		})
-		.catch(error => {
-			console.log(error)
-		})
+			console.log(response)
+			if(response.status == 204){
+				obtenerTareas()
+			}
 	}
 
 
